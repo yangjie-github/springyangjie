@@ -1,0 +1,7 @@
+1. idea远程linux管理工具
+    1.1 设置Linux的连接地址
+        file -> settings -> buil,excluson,deloument -> deployment -> 点击加号 -> 输入连接地址
+    1.2 启动ssh工具
+        点击tools -> Start SSH session -> 选择需要连接的远程主机，会出来远程连接的Terminal
+    1.3 浏览远程主机
+        tools -> deployment -> brows remote host

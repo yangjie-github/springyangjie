@@ -1,0 +1,25 @@
+idea使用activiti工作流
+
+一 ： 流程图的创建
+1. 搜索并安装插件actiBPM
+2. 新建BpmnFile,出现绘制流程图界面
+3. 绘制完成后右击改名为.xml结尾的文件
+4. 在.xml文件中右击点击Diagrams导出图片
+5. 点击向上箭头的图标,保存图片到指定文件夹
+
+出现问题： 乱码-》
+            1. 找到idea的安装目录下的bin文件夹， 找到idea.exe.vmoptions.bak 和 idea64.exe.vmoptions.bak
+            2. 分别在这两个文件后面添加-Dfile.encoding=UTF-8
+
+二 ： 部署流程定义
+在activiti文件夹下面的helloWordActiviti文件具体说明
+
+三 ：
+1.bpmn的根节点是definition节点，流程定义节点。
+2.流程定义文件有两部分组成，bpmn文件和png图片。
+3.部署流程定义 -》
+                流程部署对象表 act_re_deployment
+                流程定义对象表 act_re_procdef
+                资源文件表    act_ge_bytearray
+                主键生成策略表 act_ge_property
+4.

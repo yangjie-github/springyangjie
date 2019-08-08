@@ -1,0 +1,67 @@
+https://blog.csdn.net/qq_15901351/article/details/80791116
+https://blog.csdn.net/tuzongxun/article/details/51146333
+在日常项目开发中， 会遇到短信验证码的功能需求，接下来，主要是对这个功能进行介绍。。。
+
+一、实现手机短信验证的基本思路
+
+1、用户填写手机号，点击获取验证码按钮（页面可以做一些手机号是否有效处理），发起请求；成功后页面开始倒计时60s
+2、后台接收到请求，验证手机号是否有效和是否被注册，若无效或已注册，则返回提示用户该手机号无效或已注册；
+若有效、未被注册，后台生成验证码，并通过调用第三方短信接口并发送相关数据（包括手机号和验证码），
+若发送成功则将验证码存入session或resis中，并设置验证码有效期，失败则返回提示。
+3、手机收到验证码后在有效时间内，填写在页面，并点击注册后登陆等功能按钮，发送请求
+
+4、后台接收到请求，获取页面传过来的验证码与session或resis中的验证码对比，相同则通过验证，可以做相应的业务处理（注册或登录等操作），最后将session或resis中的验证码无效化，一般置空就可以了；否则提示验证码错误或以过期。
+
+二、实现短信发送的技术
+
+目前主要有三种方式：
+
+(1)使用webservice接口发送手机短信,这个可以使用sina提供的webservice进行发送,但是需要进行注册;
+(2)使用短信mao的方式进行短信的发送,这种方式应该是比较的常用,前提是需要购买硬件设备,
+
+(3)使用中国网建提供的SMS短信平台（中国网建申请账号地址：http://sms.webchinese.cn/reg.shtml）
+
+其实无论哪种方式，基本都一样，只需要把demo下来了，配置你自己的信息就可以啦。
+
+这个主要介绍中国网建提供的SMS短信平台发送短信：
+
+注册账号后,平台提供了5条免费的测试短信，可以下载对应的jar,和demo,修改配置，进行开发接入
+
+commons-logging-1.1.1.jar
+commons-httpclient-3.1.jar
+
+commons-codec-1.4.jar
+
+demo实例：
+
+HttpClientUtil工具类：封装了短信发送的post/get请求发送的方法
+
+test类：
+
+import java.util.HashMap;
+import java.util.Map;
+/**
+ * @Title: http://www.smschinese.cn/api.shtml
+ * @date 2011-3-22
+ * @version V1.2
+ */
+public class test {
+//用户名
+private static String Uid = "测试www";
+//接口安全秘钥
+private static String Key = "d41d8cd98f00b204e990";
+//手机号码，多个号码如13800000000,13800000001,13800000002
+private static String smsMob = "13800000000";
+//短信内容
+private static String smsText = "验证码：123456";
+public static void main(String[] args) {
+HttpClientUtil client = HttpClientUtil.getInstance();
+//UTF发送
+int result = client.sendMsgUtf8(Uid, Key, smsText, smsMob);
+if(result>0){
+System.out.println("UTF8成功发送条数=="+result);
+}else{
+System.out.println(client.getErrorMsg(result));
+}
+}
+}

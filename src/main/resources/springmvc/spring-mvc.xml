@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+                        http://www.springframework.org/schema/context
+                        http://www.springframework.org/schema/context/spring-context-3.1.xsd
+                        http://www.springframework.org/schema/mvc
+                        http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+
+    <!-- springMvc配置与网站跳转逻辑有关的 -->
+
+    <!-- 加载配置文件 -->
+    <context:property-placeholder location="classpath:dataSource/dbConfig.properties"/>
+
+    <!-- ===========================1、扫描所有的组件================================================= -->
+    <context:component-scan base-package="cn.mylife">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!-- ===========================2、配置视图解析器================================================= -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/views/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!-- ===========================3、两个标配================================================= -->
+    <!-- 将spring不能处理的请求交给tomcat -->
+    <mvc:default-servlet-handler/>
+
+    <!-- ====== 4、stringHttpMessageConverter 增加applocation/json转换格式，前台响应就是json对象 =============================== -->
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <bean id="stringHttpMessageConverter" class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>text/plain;charset=UTF-8</value>
+                        <value>text/html;charset=UTF-8</value>
+                        <value>application/json;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+            <bean id="mappingJacksonHttpMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>text/html;charset=UTF-8</value>
+                        <value>application/json;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <!-- =========================== 5、 配置静态资源路径 ===========================================-->
+    <mvc:resources mapping="/static/**" location="/static/"/>
+    <!-- 支持springMvc更高级的一些功能，比如JS303校验，快捷的ajax请求 ,映射动态请求-->
+    <mvc:annotation-driven/>
+
+    <!-- ========================== 6、文件上传 =============================== -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="defaultEncoding" value="UTF-8"/>
+        <!--最大文件字节 30M-->
+        <property name="maxUploadSize" value="30000000"/>
+        <!--内存使用限制字节-->
+        <!--<property name="maxInMemorySize" value="40960"/>-->
+    </bean>
+</beans>

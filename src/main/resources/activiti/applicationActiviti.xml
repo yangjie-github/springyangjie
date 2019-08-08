@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd">
+
+    <!-- 扫描activiti在线编辑器的跳转@RestController -->
+    <!--
+    要分析这个错误，就要先了解 use-default-filters 这个属性的作用。use-default-filters 属性的默认值为 true，即使用默认的 Filter 进行包扫描，而默认的 Filter 对标有 @Service,@Controller和@Repository 的注解的类进行扫描，因为前面说过，我们希望 SpringMVC 只来控制网站的跳转逻辑，所以我们只希望 SpringMVC 的配置扫描 @Controllerce 注解标注的类，不希望它扫描其余注解标注的类，所以设置了 use-default-filters 为 false，并使用 context:include-filter 子标签设置其只扫描带有 @Controller 注解标注的类。
+
+    而 Spring 就不同了，我们希望 Spring 只不扫描带有 @Controller 注解标注的类，而扫描其他注解标注的类，而这时建立在使用默认的 Filter 进行扫描的基础上，设置了 context:exclude-filter 标签，不扫描 @Controller 注解标注的类，所以不应该设置 use-default-filters 为 false，所以这就解释了为什么一开始启动 Tomcat 时报了一个找不到 Service 的错误。
+
+    Step 3：总结
+
+    在使用 use-default-filters 属性时要分清楚需要扫描哪些包，是不是需要使用默认的 Filter 进行扫描。楼主稍微总结一下，即 use-default-filters="false" 需要和 context:include-filter 一起使用，而不能和 context:exclude-filter 属性一起使用。-->
+    <!-- 扫描activiti在线编辑器的跳转@RestController -->
+    <context:component-scan base-package="cn.mylife.activitmodel">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!-- ==================== Activiti配置 start =================== -->
+    <!-- 单例json对象 -->
+    <bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper"/>
+
+    <!-- activiti的processEngine配置 -->
+    <bean id="processEngineConfiguration" class="org.activiti.spring.SpringProcessEngineConfiguration">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="transactionManager" ref="transactionManager"/>
+        <!-- 没有表创建表 -->
+        <property name="databaseSchemaUpdate" value="true"/>
+        <!-- 是否激活Activiti的任务调度 -->
+        <property name="jobExecutorActivate" value="false"/>
+        <property name="processDefinitionCacheLimit" value="10"/>
+        <!-- 生成流程图的字体 -->
+        <property name="activityFontName" value="宋体"/>
+        <property name="labelFontName" value="宋体"/>
+    </bean>
+
+    <!-- 加载activiti引擎processEngine -->
+    <bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean" destroy-method="destroy">
+        <property name="processEngineConfiguration" ref="processEngineConfiguration"/>
+    </bean>
+
+    <!-- activiti的7大服务接口 -->
+    <bean id="repositoryService" factory-bean="processEngine" factory-method="getRepositoryService"/>
+    <bean id="runtimeService" factory-bean="processEngine" factory-method="getRuntimeService"/>
+    <bean id="taskService" factory-bean="processEngine" factory-method="getTaskService"/>
+    <bean id="formService" factory-bean="processEngine" factory-method="getFormService"/>
+    <bean id="historyService" factory-bean="processEngine" factory-method="getHistoryService"/>
+    <bean id="managementService" factory-bean="processEngine" factory-method="getManagementService"/>
+    <bean id="identityService" factory-bean="processEngine" factory-method="getIdentityService"/>
+    <!-- ==================== Activiti配置 end =================== -->
+</beans>

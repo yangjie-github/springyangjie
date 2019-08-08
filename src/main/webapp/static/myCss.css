@@ -1,0 +1,13 @@
+/*css*/
+.shadow-border {
+    box-shadow: 3px 4px 1px 7px ghostwhite;
+    padding: 50px;
+}
+
+#tip {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    display: none;
+    z-index: 9999;
+}

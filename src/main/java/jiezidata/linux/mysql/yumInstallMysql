@@ -1,0 +1,77 @@
+一、检查系统是否安装其他版本的MYSQL数据
+#yum list installed | grep mysql
+#yum -y remove mysql-libs.x86_64
+
+二、安装及配置
+# wget http://repo.mysql.com/mysql-community-release-el6-5.noarch.rpm
+# rpm -ivh mysql-community-release-el6-5.noarch.rpm
+# yum repolist all | grep mysql
+安装MYSQL数据库
+# yum install mysql-community-server -y
+设置为开机启动(2、3、4都是on代表开机自动启动)
+# chkconfig --list | grep mysqld
+# chkconfig mysqld on
+
+三、设置远程root
+启动mysql
+# service mysqld start
+设置root密码
+# mysql_secure_installation
+登陆root账号
+# mysql -uroot -p
+建立远程root用户
+mysql> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'jiejie521' WITH GRANT OPTION;
+mysql> flush privileges;
+
+
+四、设置utf-8编码
+
+查看mysql原本编码：
+mysql> show variables like 'character%';
+设置编码
+# vi /etc/my.cnf
+
+1、在[client]字段里加入default-character-set=utf8，如下：
+
+[client]
+default-character-set=utf8
+
+2、在[mysqld]字段里加入character-set-server=utf8，如下：
+
+[mysqld]
+character-set-server=utf8
+
+3、在[mysql]字段里加入default-character-set=utf8，如下：
+
+[mysql]
+default-character-set=utf8
+
+
+1）vim /etc/my.cnf
+2）此文件中可能会有[client] 、[mysql]、 [mysqld]、[mysqldump]、[myisamchk]、[mysqlhotcopy]等的一个或多个
+以[client]开头：表示下面的配置是客户端的配置内容
+以[mysql]开头：表示下面的配置是使用mysql命令登录数据库时的配置
+以[mysqld]开头：表示下面的配置是mysql服务器的配置
+
+
+重启mysql
+
+# service mysqld restart
+再次查看编码：
+
+复制代码
+     # mysql -uroot -p
+mysql> show variables like 'character%';
++--------------------------+----------------------------+
+| Variable_name | Value |
++--------------------------+----------------------------+
+| character_set_client | utf8 |
+| character_set_connection | utf8 |
+| character_set_database | utf8 |
+| character_set_filesystem | binary |
+| character_set_results | utf8 |
+| character_set_server | utf8 |
+| character_set_system | utf8 |
+| character_sets_dir | /usr/share/mysql/charsets/ |
++--------------------------+----------------------------+
+8 rows in set (0.00 sec)

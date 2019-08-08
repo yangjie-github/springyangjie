@@ -1,0 +1,44 @@
+1.  本地数据库存入乱码：windows默认编码是gbk, 在安装mysql时候需要设置编码，没有设置编码会导致乱码。linux默认编码是utf-8。
+    解决办法：在cmd运行mysql -hlocalhost -uroot -p 密码；执行show variables like 'character_set_%';
+            查看character_set_database是不是utf-8; 若不是，在mysql的安装目录下找到my.ini文件，修改两处内容default-character-set=utf8
+2. mysql 8个character_set 变量说明
+    一、character_set_client
+
+    　　主要用来设置客户端使用的字符集。
+    二、character_set_connection
+
+    　　主要用来设置连接数据库时的字符集，如果程序中没有指明连接数据库使用的字符集类型则按照这个字符集设置。
+    三、character_set_database
+
+    　　主要用来设置默认创建数据库的编码格式，如果在创建数据库时没有设置编码格式，就按照这个格式设置。
+    四、character_set_filesystem
+
+    　　文件系统的编码格式，把操作系统上的文件名转化成此字符集，即把 character_set_client转换character_set_filesystem， 默认binary是不做任何转换的。
+    五、character_set_results
+
+    　　数据库给客户端返回时使用的编码格式，如果没有指明，使用服务器默认的编码格式。
+    六、character_set_server
+
+    　　服务器安装时指定的默认编码格式，这个变量建议由系统自己管理，不要人为定义。
+    七、character_set_system
+
+    　　数据库系统使用的编码格式，这个值一直是utf8，不需要设置，它是为存储系统元数据的编码格式。
+    八、character_sets_dir
+
+    　　这个变量是字符集安装的目录。
+    在启动mysql后，我们只关注下列变量是否符合我们的要求
+
+        character_set_client
+        character_set_connection
+        character_set_database
+        character_set_results
+        character_set_server
+
+    下列三个系统变量我们不需要关心，不会影响乱码等问题
+
+        character_set_filesystem
+        character_set_system
+        character_sets_dir
+
+    更改以上字符集直接 set character_set_XXX = “gbk”;（XXX是写以上的变量名）
+3. 若无法修改，去my.ini 文件修改，在C:\ProgramData\MySQL\MySQL Server 5.6下面，或者在C:\Program Files (x86)下面

@@ -1,0 +1,124 @@
+ 在三种情况下，request.getHeader("REFERER")取值
+1：通过链接跳过来
+2：在地址栏中输入URL，打回车
+3：刷新
+
+当链接过来的时候，referer的值是链接过来的页面的URL，正常。我刷新的时候referer的值没有变，但当我在地址栏中打回车（URL没有改变，只是打回车），referer值却变成NULL了。
+
+1）：链接过来和在地址栏中直接输入URL，有没有什么区别？如果有，有什么区别？
+2）：刷新的时候URL为什么不变，为什么还是前一个URL地址，为什么不变成当前的URL？
+3）：直接输入为什么得不到 <%=request.getHeader("REFERER")的值？
+
+如果是直接在浏览器里输入有referer的页面，返回是null，也就是说referer只有从别的页面点击连接来到这页的才会有内容。为NULL就是手工，非null就是连接过来的。刷新的时候，会检查服务端是否会有更新，没有的话，则使用本机的缓存，也就是说，你刷新时得到的响应依然是
+前一次得到的服务端的内容，因为你的jsp文件没有变化。
+referer是从哪里来的，也就是前一个页面。回车，则没有以前的，等同于你新打开一个浏览器，再次输入一样 。刷新，就是重复上一次的操作。
+
+ request.getHeader() 相关详细
+
+//获取客户端向服务器端传送数据的协议名称
+System.out.println("rotocol: " + request.getProtocol());
+//返回的协议名称.默认是http
+System.out.println("Scheme: " + request.getScheme());
+//可以返回当前页面所在的服务器的名字;如果你的应用部署在本机那么其就返回localhost或者127.0.0.1 ，这两个是等价的
+System.out.println("Server Name: " + request.getServerName() );
+//可以返回当前页面所在的服务器使用的端口,就是8083
+System.out.println("Server Port: " + request.getServerPort());
+ //request.getRemoteAddr()是获得客户端的ip地址
+System.out.println("Remote Addr: " + request.getRemoteAddr());
+  //request.getRemoteHost()是获得客户端的主机名。
+System.out.println("Remote Host: " + request.getRemoteHost());
+//返回字符编码
+System.out.println("Character Encoding: " + request.getCharacterEncoding());
+
+System.out.println("Content Length: " + request.getContentLength());
+//定义网络文件的类型和网页的编码，决定浏览器将以什么形式、什么编码读取这个文件，
+System.out.println("Content Type: "+ request.getContentType());
+//如果servlet由一个鉴定方案所保护，如HTTP基本鉴定，则返回方案名称
+System.out.println("Auth Type: " + request.getAuthType());
+//返回HTTP请求方法（例如GET、POST等等）
+System.out.println("HTTP Method: " + request.getMethod());
+//返回在URL中指定的任意附加路径信息。
+System.out.println("path Info: " + request.getPathInfo());
+ //返回在URL中指定的任意附加路径信息，被子转换成一个实际路径
+System.out.println("path Trans: " + request.getPathTranslated());
+//返回查询字符串，即URL中?后面的部份。
+System.out.println("Query String: " + request.getQueryString());
+//如果用户通过鉴定，返回远程用户名，否则为null。
+System.out.println("Remote User: " + request.getRemoteUser());
+//返回客户端的会话ID
+System.out.println("Session Id: " + request.getRequestedSessionId());
+//返回URL中一部分，从“/”开始，包括上下文，但不包括任意查询字符串。
+System.out.println("Request URI: " + request.getRequestURI());
+ //返回请求URI上下文后的子串
+System.out.println("Servlet Path: " + request.getServletPath());
+//返回指定的HTTP头标指。如果其由请求给出，则名字应为大小写不敏感。
+System.out.println("Accept: " + request.getHeader("Accept"));
+System.out.println("Host: " + request.getHeader("Host"));
+System.out.println("Referer : " + request.getHeader("Referer"));
+System.out.println("Accept-Language : " + request.getHeader("Accept-Language"));
+System.out.println("Accept-Encoding : " + request.getHeader("Accept-Encoding"));
+System.out.println("User-Agent : " + request.getHeader("User-Agent"));
+System.out.println("Connection : " + request.getHeader("Connection"));
+System.out.println("Cookie : " + request.getHeader("Cookie"));
+System.out.println("Created : " + session.getCreationTime());
+System.out.println("LastAccessed : " + session.getLastAccessedTime());
+
+//如果在地址栏中输入URL，打回车，地址 http://localhost:7080/nadlibrary/book/user/booklist
+rotocol: HTTP/1.1
+Scheme: http
+Server Name: localhost
+Server Port: 7080
+Remote Addr: 127.0.0.1
+Remote Host: 127.0.0.1
+Character Encoding: utf8
+Content Length: -1
+Content Type: null
+Auth Type: null
+HTTP Method: GET
+path Info: null
+path Trans: null
+Query String: null
+Remote User: null
+Session Id: E2D9AD01880BDC232A134FFCCE280941
+Request URI: /nadlibrary/book/user/booklist
+Servlet Path: /book/user/booklist
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Host: localhost:7080
+Referer : null
+Accept-Language : zh-CN,zh;q=0.8
+Accept-Encoding : gzip,deflate,sdch
+User-Agent : Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17
+Connection : keep-alive
+Cookie : JSESSIONID=E2D9AD01880BDC232A134FFCCE280941
+Created : 1358671508064
+LastAccessed : 1358671508517
+
+如果超链接（上一个页面是http://localhost:7080/nadlibrary/index通过这个页面上的超链接访问http://localhost:7080/nadlibrary/book/user/booklist）
+rotocol: HTTP/1.1
+Scheme: http
+Server Name: localhost
+Server Port: 7080
+Remote Addr: 127.0.0.1
+Remote Host: 127.0.0.1
+Character Encoding: utf8
+Content Length: -1
+Content Type: null
+Auth Type: null
+HTTP Method: GET
+path Info: null
+path Trans: null
+Query String: null
+Remote User: null
+Session Id: C458CE3A2B03AFA4C2AE1497036221CD
+Request URI: /nadlibrary/book/user/booklist
+Servlet Path: /book/user/booklist
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Host: localhost:7080
+Referer : http://localhost:7080/nadlibrary/index
+Accept-Language : zh-CN,zh;q=0.8
+Accept-Encoding : gzip,deflate,sdch
+User-Agent : Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17
+Connection : keep-alive
+Cookie : JSESSIONID=C458CE3A2B03AFA4C2AE1497036221CD
+Created : 1358671583536
+LastAccessed : 1358671583958

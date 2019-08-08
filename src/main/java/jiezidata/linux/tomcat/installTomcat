@@ -1,0 +1,80 @@
+一、 tomcat的安装和启动
+    1. 上传tomcat压缩文件到服务器
+    2. 解压 tar -zxvf apache-tomcat-8.5.4.tar.gz
+    3. 创建文件夹 mkdir /usr/local/tomcat
+    4. 将解压后的文件移动到创建的文件夹下面 mv apache-tomcat-8.5.4/* /usr/local/tomcat
+    5. 切换到tomcat目录 tamcat cd /usr/local/tomcat/bin
+    6. 启动tomcat  ./startup.sh
+    7. 关闭tomcat  ./shutdown.sh
+二、防火墙设置
+    1. 防火墙设置 vi /etc/sysconfig/iptables
+    2. 添加 -A INPUT -p tcp -m tcp --dport 8080 -j ACCEPT
+    3. 重启防火墙 service iptables restart
+三、端口查看
+    1. ps -ef | grep tomcat
+        ker 4399 1 6 21:46 pts/1 00:00:01 /usr/java/jdk1.7.0_25/jre/bin/java
+        可以看到 tomcat 的进程号是4399
+    2. netstat -tupln | grep 4399
+       tcp 0 0 :::8009 :::* LISTEN 4399/java
+       tcp 0 0 :::8080 :::* LISTEN 4399/java
+       tcp 0 0 ::ffff:127.0.0.1:8005 :::* LISTEN 4399/java
+       此时看到8080 和 8009端口都是打开的。这说明 tomcat 在centOS上已经正常运行了。
+四、配置tomcat开机启动
+    1. 切换到tomcat的安装目录 cd /usr/local/tomcat/bin
+    2. 编辑文件：vi startup.sh文件
+    3. 在文件头加入
+        #chkconfig: 2345 80 90
+        #description:tomcat auto start
+        #processname: tomcat7 // 注意这里的名字与下面别名的名字要一致（第七步）
+
+        <!--
+            #!/bin/sh
+            #chkconfig: 2345 80 90
+                #description:auto_run
+            第一行，告诉系统使用的shell,所以的shell脚本都是这样。
+            第二行，chkconfig后面有三个参数2345,80和90告诉chkconfig程序，需要在rc2.d~rc5.d目录下，创建名字为 S80auto_run的文件连接，连接到/etc/rc.d/init.d目录下的的auto_run脚本。第一个字符是S，系统在启动的时候，运行脚 本auto_run，就会添加一个start参数，告诉脚本，现在是启动模式。同时在rc0.d和rc6.d目录下，创建名字为K90auto_run的 文件连接，第一个字符为K，个系统在关闭系统的时候，会运行auto_run，添加一个stop，告诉脚本，现在是关闭模式。
+            注意上面的三行中，第二，第三行是必须的，否则在运行chkconfig --add auto_run时，会报错。
+        -->
+    4. 编辑catalina.sh文件 ： vi catalina.sh
+    5. 然后直接输入./ 出现/符号： 然后输入export按回车开始搜索export
+    6. 在fi的上一行添加然环境变量
+       export CATALINA_BASE=/home/test/tomcatexport/apache-tomcat-8.5.34
+       CATALINA_HOME=/home/test/tomcatexport/apache-tomcat-8.5.34
+       CATALINA_TMPDIR=/home/test/tomcat/apache-tomcat-8.5.34   （/home/test/tomcat为tomcat的安装目录）
+    7. 然后添加连接
+       ln -s /home/test/tomcat/bin/startup.sh /etc/rc.d/init.d/tomcat7
+       通过上面的命令将startup.sh文件连接到init.d目录下名称为tomcat7
+    8. 然后切换到/etc/rc.d/init.d/目录用
+    9. ll查看一下tomcat是否有可执行权限， 如果没有的话使用chmod +x tomcat7添加执行权限
+    10. 然后用chkconfig --add tomcat7 添加开机启动服务
+    11. 最后使用chkconfig --list确认一下是否添加成功
+    12. 查看tomcat是否开机启动 chkconfig --list|grep tomcat
+五、 添加tomcat访问端口为80， 即输入域名就可发访问
+    1. 修改， 将8080端口改为80
+        <Connector port="80" protocol="HTTP/1.1"
+                       connectionTimeout="20000"
+                       redirectPort="8443" />
+    2. 添加， 8080和80都可以访问
+        <Connector port="8080" protocol="HTTP/1.1"
+                       connectionTimeout="20000"
+                       redirectPort="8443" />
+        <Connector port="80" protocol="HTTP/1.1"
+                       connectionTimeout="20000"
+                       redirectPort="8443" />
+六、本地启动tomcat
+    修改tomcat的server.xml文件，在下面host标签下添加
+        <Context path="" docBase="F:/workplace/p1/WebRoot" debug="0"/>
+            docBase是项目的绝对路径
+
+七、错误
+    1. java.net.UnknownHostException:Name or Service not known
+    2.  通常情况下这个错误在服务器出现，这个错误的引起是因为服务器无法找到当前主机名对应的ip，错误格式如下的可用此方法解决：
+        Caused by: java.net.UnknownHostException:  [hostname] : [hostname] : Name or Service not known
+
+        解决方案：
+        修改服务器hosts文件：
+        vi /etc/hosts
+
+        添加记录行：
+        127.0.0.1 [hostname] -----该hostname与报错信息中的hostname对应。
+

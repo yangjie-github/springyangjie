@@ -1,0 +1,127 @@
+方法一：
+
+
+linux 下tomcat开机自启动
+修改Tomcat/bin/startup.sh 为:
+
+export JAVA_HOME=/usr/java/j2sdk1.4.2_08
+export CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar:$JAVA_HOME/lib/dt.jar:.
+export PATH=$PATH:$JAVA_HOME/bin
+export CATALINA_HOME=/usr/local/tomcat
+/usr/local/tomcat/bin/catalina.sh start
+在/etc/rc.d/rc.local中加入:
+
+/usr/local/tomcat/bin/startup.sh
+
+
+方法二：
+
+1、把下面的代码保存为tomcat文件，并让它成为可执行文件 chmod 755 tomcat.
+
+复制代码
+复制代码
+#!/bin/bash
+#
+# kenny kenny.zhou@tom.com
+# /etc/rc.d/init.d/tomcat
+# init script for tomcat precesses
+#
+# processname: tomcat
+# description: tomcat is a j2se server
+# chkconfig: 2345 86 16
+# description: Start up the Tomcat servlet engine.
+
+if [ -f /etc/init.d/functions ]; then
+. /etc/init.d/functions
+elif [ -f /etc/rc.d/init.d/functions ]; then
+. /etc/rc.d/init.d/functions
+else
+echo -e "/atomcat: unable to locate functions lib. Cannot continue."
+exit -1
+fi
+
+RETVAL=$?
+CATALINA_HOME="/usr/local/tomcat"
+
+case "$1" in
+start)
+if [ -f $CATALINA_HOME/bin/startup.sh ];
+then
+echo $"Starting Tomcat"
+$CATALINA_HOME/bin/startup.sh
+fi
+;;
+stop)
+if [ -f $CATALINA_HOME/bin/shutdown.sh ];
+then
+echo $"Stopping Tomcat"
+$CATALINA_HOME/bin/shutdown.sh
+fi
+;;
+*)
+echo $"Usage: $0 {start|stop}"
+exit 1
+;;
+esac
+
+exit $RETVAL
+复制代码
+复制代码
+
+
+2、将tomcat文件拷贝到/etc/init.d/下，并运行：
+
+chkconfig --add tomcat
+3、在tomcat/bin/catalina.sh文件中加入以下语句：
+
+export JAVA_HOME=/YOURPATH/tomcat/jdk
+export CATALINA_HOME=/YOURPATH/tomcat
+export CATALINA_BASE=/YOURPATH/tomcat
+export CATALINA_TMPDIR=/YOURPATH/tomcat/temp
+启动tomcat：
+
+service tomcat start
+停止tomcat:
+
+service tomcat stop　
+
+
+注意：
+
+如果是centos7的话，默认是系统自动不执行/etc/rc.d/rc.local，需要更改权限，
+
+最近发现centos7 的/etc/rc.local不会开机执行，于是认真看了下/etc/rc.local文件内容的就发现了问题的原因了
+
+#!/bin/bash
+# THIS FILE IS ADDED FOR COMPATIBILITY PURPOSES
+#
+# It is highly advisable to create own systemd services or udev rules
+# to run scripts during boot instead of using this file.
+#
+# In constrast to previous versions due to parallel execution during boot
+# this script will NOT be run after all other services.
+#
+# Please note that you must run 'chmod +x /etc/rc.d/rc.local' to ensure
+# that this script will be executed during boot.
+翻译：
+
+#这个文件是为了兼容性的问题而添加的。
+#
+#强烈建议创建自己的systemd服务或udev规则来在开机时运行脚本而不是使用这个文件。
+#
+#与以前的版本引导时的并行执行相比较，这个脚本将不会在其他所有的服务后执行。
+#
+#请记住，你必须执行“chmod +x /etc/rc.d/rc.local”来确保确保这个脚本在引导时执行。
+于是我有确认了下/etc/rc.local的权限
+
+[root@localhost ~]# ll /etc/rc.local
+lrwxrwxrwx. 1 root root 13 8月  12 06:09 /etc/rc.local -> rc.d/rc.local
+[root@localhost ~]# ll /etc/rc.d/rc.local
+-rw-r--r--. 1 root root 477 6月  10 13:35 /etc/rc.d/rc.local
+/etc/rc.d/rc.local没有执行权限，于是按说明的内容执行
+
+
+chmod +x /etc/rc.d/rc.local
+重启后发现/etc/rc.local能够执行了。
+
+看样子是版本的变迁，/etc/rc.local /etc/rc.d/rc.local正在弃用的路上。

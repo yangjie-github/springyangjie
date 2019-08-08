@@ -1,0 +1,161 @@
+linux 下mysql的安装步骤：
+
+一： 删除之前mysql
+
+    1. 查看之前安装的mysql: rpm -qa | grep -i mysql
+    2. 停止服务：
+        进入安装目录文件： /etc/init.d/
+        停止服务：       service mysql.server stop/service mysqld stop
+    3. 删除之前的安装：  rpm -ev --nodeps perl-DBD-MySQL-4.013-3.el6.x86_64
+    4. 查找之前老版本的安装： find / -name mysql
+    5. 删除对应的目录： rm -rf /var/lib/mysql
+    6. 卸载 my.cnf : rm -rf /etc/my.cnf
+    7. 再次进行查找： 第一步；
+
+二：使用二进制方式安装
+
+    1. 使用ssh工具将mysql对应的版本上传到linux服务器上； 新建文件夹放5.6版本的mysql压缩文件
+    2. 依次执行命令：
+       groupadd mysql
+       useradd -r -g mysql -s /bin/false mysql
+       cd /usr/local
+       tar zxvf /path/to/mysql-VERSION-OS.tar.gz  解压
+       ln -s full-path-to-mysql-VERSION-OS mysql  起别名
+       cd mysql
+       scripts/mysql_install_db --user=mysql
+       bin/mysqld_safe --user=mysql &
+       # Next command is optional 下一条命令可选
+       cp support-files/mysql.server /etc/init.d/mysql.server 复制启动文件
+
+三、 启动mysql
+     /etc/init.d/mysql.server start
+四、 查看mysql是否是启动状态
+    使用命令 # service mysqld status 或者 # service mysql status 命令来查看mysql 的启动状态
+    如果是 mysqld is stopped 那就说明mysql服务是停止状态，
+    如果是 mysqld is running 那就说明mysql服务是启动状态
+
+五、 修改mysql密码
+    方法一：
+    在mysql系统外，使用mysqladmin
+    # mysqladmin -u root -p password "test123"
+    Enter password: 【输入原来的密码】
+
+    方法二：
+    通过登录mysql系统，
+    # mysql -uroot -p
+    Enter password: 【输入原来的密码】
+    mysql>use mysql;
+    mysql> update user set password=passworD("test") where user='root';
+    mysql> flush privileges;
+    mysql> exit;
+
+    忘记原来的myql的root的密码；
+
+    方法三：
+
+    首先拿到操作系统的root权限，然后kill掉Mysql服务或者手动stop掉，这里我推荐使用手动stop；
+
+    #service mysql stop
+
+    然后执行
+
+    # mysqld_safe --skip-grant-tables &
+
+    &，表示在后台运行，不再后台运行的话，就再打开一个终端吧。
+    接着登陆MySQL修改密码
+    # mysql -uroot -p 输入新密码；
+    # mysql
+    mysql> use mysql;
+    mysql> UPDATE user SET password=password("test123") WHERE user='root';
+    mysql> exit;
+
+
+    注意：如果Mysql的版本是5.7及以上的话update语句如下：
+
+    mysql> update user set authentication_string=passworD("test") where user='root';
+
+六、 如何查看mysql 默认端口号和修改端口号
+
+      1. 登录mysql
+
+      [root@test /]# mysql -u root -p
+      Enter password:
+
+
+      2. 使用命令show global variables like 'port';查看端口号
+
+      mysql> show global variables like 'port';
+      +---------------+-------+
+      | Variable_name | Value |
+      +---------------+-------+
+      | port | 3306 |
+      +---------------+-------+
+      1 row in set (0.00 sec)
+
+
+      3. 修改端口，编辑/etc/my.cnf文件，早期版本有可能是my.conf文件名，增加端口参数，并且设定端口，注意该端口未被使用，保存退出。
+
+      [root@test etc]# vi my.cnf
+      [mysqld]
+      port=3506
+      datadir=/var/lib/mysql
+      socket=/var/lib/mysql/mysql.sock
+      user=mysql
+      # Disabling symbolic-links is recommended to prevent assorted security risks
+      symbolic-links=0
+
+      [mysqld_safe]
+      log-error=/var/log/mysqld.log
+      pid-file=/var/run/mysqld/mysqld.pid
+
+      "my.cnf" 11L, 261C written
+      [root@test etc]#
+
+      4. 重新启动mysql
+
+      [root@test ~]# /etc/init.d/mysqld restart
+      Stopping mysqld: [ OK ]
+      Starting mysqld: [ OK ]
+
+      5.再次登录后检查端口已修改为’3506’.
+
+      [root@test etc]# mysql -u root -p
+      Enter password:
+      Welcome to the MySQL monitor. Commands end with ; or \g.
+      Your MySQL connection id is 2
+      Server version: 5.1.66 Source distribution
+
+      Copyright (c) 2000, 2012, Oracle and/or its affiliates. All rights reserved.
+
+      Oracle is a registered trademark of Oracle Corporation and/or its
+      affiliates. Other names may be trademarks of their respective
+      owners.
+
+      Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+      mysql> show global variables like 'port';
+      +---------------+-------+
+      | Variable_name | Value |
+      +---------------+-------+
+      | port | 3506 |
+      +---------------+-------+
+      1 row in set (0.00 sec)
+
+      mysql>
+
+      总结：注意修改的端口不要被占用，而且要有规划，不要轻意的总是调整数据库端口。还有就是安全保障，记得与负责网络的人提前通知，以免端口无法正常使用。
+七、 查看端口状态
+     netstat -apn|grep 3306
+八、 问题
+    1.mysql -uroot -proot 登录（本人密码是root），出错
+    2.然后用无密码登录，竟然成功；
+    3.查看mysql中的数据库，发现只有两个系统表了
+    4.因为mysql数据库的user表里，存在用户名为空的账户即匿名账户，导致登录的时候是虽然用的是root，但实际是匿名登录的，通过错误提示里的''@'localhost'可以看出来
+    处理：
+        1.停止服务：service mysql stop
+        2.屏幕出现： Starting demo from .....
+        3.重新打开一个ssh链接：
+        4.在新链接输入：mysql -u root mysql；
+        5.delete from user where USER='';
+        6.FLUSH PRIVILEGES;
+        7.\q

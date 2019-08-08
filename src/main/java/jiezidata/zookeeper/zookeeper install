@@ -1,0 +1,47 @@
+============================zookeeper-stand-alone==================================================
+
+1. 下载zookeeper到linux下， 解压到指定目录 tar -zxvf zookeeper.tar C /usr/local
+2. 配置修改
+    （1）将/usr/local/zookeeper.4.10.3/config 路径下的zoo_sample.cfg修改为zoo.cfg
+        mv zoo_sample.cfg zoo.cfg
+    （2）打开zoo.cfg文件，修改dataDir路径： 将数据保存到此路径下
+        vim zoo.cfg
+        修改为：dataDir = /usr/local/zookeeper-3.10.3/zkData
+    （3）在上一步的文件夹中创建zkData文件夹
+        mkdir zkData
+
+     ==配置参数解读
+        tickTime=2000:心跳2000毫秒
+        initTime=10:leader和follower刚开始通信时候的最大延迟时间， 10表示10个心跳贞
+        synLimit=5:同步心跳贞，集群正常启动后通讯时间
+        clientPort=2181:客户端的端口号， 客户端访问服务的端口号
+
+3. 操作zookeeper
+    （1）启动: bin/zkServer.sh start
+    （2）查看进程是否启动：jps
+    （3）查看状态：bin/zkServer.sh status
+    （4）启动客户端： bin/zkCli.sh
+        ls / :查看节点
+    （5）退出客户端： quit
+    （6）停止zookeeper: bin/zkServer.sh stop
+4. zookeeper的内部原理：
+    （1）选举机制
+        1）半数机制：集群中半数以上的集群存活，集群可用， 所以zookeeper适合安装技术台服务器；
+        2）zookeeper在配置文件中没有指定Master和Slave, 但是，zookeeper工作时，是有一个节点为leader,其他节点为follower,leader是通过内部的选举机制临时产生的；
+        3）每台服务器加载进来之后先选自己，在进来一台服务器，也选自己，然后前面的回选举myId大的号为leader, 一旦产生了leader（票数超过半数以上）,后面的投票无效。
+5. zookeeper的节点类型：
+    （1）持久类：Persistent:客户端和服务器断开连接后， 创建的节点不删除
+        持久化分类：
+            1）简单的持久化；
+            2）持久的同时添加编号：产生的数据递增，持久化顺序编号目录节点：创建一个节点，目录号加 +1 ，例如：/znode2/001, /znode2/002
+                在分布式系统中，书序号可以用来用于全局排序，这样客户端可以通过顺序号推断事件的顺序；
+    （2）短暂类：Ephemeral:客户端和服务器断开连接后，创建的节点自己删除
+        临时节点分类：
+            1）简单的删除节点；
+            2）删除几点的同时添加编号：产生的数据递增。
+
+========================================zookeeper-集群=======================================================================
+
+1.
+
+

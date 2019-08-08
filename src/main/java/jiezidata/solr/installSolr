@@ -1,0 +1,62 @@
+1. 搭建solr服务器
+    （1）下载solr4.10.3的包
+    （2）下载tomcat7版本
+    （3）将sole的war包复制到tomcat的webapp下；war包在example下的webapp下
+    （4）解压复制好的solr的war包，删除原war包；
+    （5）打开solr war包, 找到example下的lib文件夹，打开ext,将5个jar包复制到apache/webapps/solr/WEB0INF/lib下；
+    （6）创建家文件夹：新建文件夹solrhome, 将solr\solr-4.10.3\example\solr下的所有文件复制到此文件夹
+    （7）配置家：
+        打开在F:\yangjiedata\solr\apache-tomcat-8.5.29\webapps\solr\WEB-INF下的web.xml文件，40行，修改value值，修改为solrhome位置
+    （6）启动tomcat,访问localhost:8080/solr,看到solr界面。
+2. solr配置ik分词器
+    F:\yangjiedata\solr\solrhome\collection1\conf下的schema.xml 配置：
+        步骤： （1）将ik分词器的jar包放入第一步的（5）中；
+               （2）复制solr的分词器配置文件ext.dic/stopword.dic/IKAnalyzer.cfg.xml ,3个配置文件到
+                       apache/webapps/solr/WEB0INF/lib的同级目录classes下（需要创建classes文件夹）
+                   （3）在schema.xml中添加一个西定义的fieldType,使用中文分词器,并配置域；
+                           <fieldType name="text_ik" class="solr.TextField">
+                               <analyzer class="org.wltea.analyzer.lucene.IKAnalyzer"/>
+                             </fieldType>
+
+                                <field name="title_ik" type="text_ik" indexed="true" stored="true"/>
+                               <field name="content_ik" type="text_ik" indexed="true" stored="false" multiValued="true"/>
+                     （4）重启服务
+                     （5）注意编辑ext.dic/stopword.dic文件时候注意以utf-8无bom格式编辑，否则会乱码。
+3. solr使用dataImport产检批量导入数据
+    （1）把dataImport插件依赖包（F:\yangjiedata\solr\solr-4.10.3\dist）下面，添加到solrcore(collection1/lib)(没有lib新建)中；
+    （2）导入mysql驱动到上面lib中；
+    （3）配置solrconfig.xml文件，添加一个requestHandler;
+        <requestHandler name="/dataimport" class="org.apache.solr.handler.dataimport.DataImportHandler" >
+            <lst name="defaults">
+              <str name="config">data-config.xml</str>
+            </lst>
+          </requestHandler>
+          在solrconfig.xml文件同级目录下创建data-config.xml文件
+          （1）文件内容：
+            <?xml version="1.0" encoding="UTF-8" ?>
+            <dataConfig>
+            <dataSource type="JdbcDataSource"
+                        driver="com.mysql.jdbc.Driver"
+                        url="jdbc:mysql://localhost:3306/chengcheng"
+                        user="root"
+                        password="root"/>
+            <document>
+            <entity name="user" pk="sku_id" query="select id, loginName, passWord, email from user">
+             <field column="id" name="id"/>//配置到2.（3）中
+             <field column="loginName" name="loginName"/>
+             <field column="passWord" name="passWord"/>
+             <field column="email" name="email" />
+            </document>
+            </dataConfig>
+4. copy域===schema.xml
+    <field name="item_keywords" type="text_ik" indexed="true" stored="false" multivalued="true"/>
+       <copyField source="item_title" dest="item_keywords"/>
+      <copyField source="item_category" dest="item_keywords"/>
+      <copyField source="item_seller" dest="item_keywords"/>
+      <copyField source="item_brand" dest="item_keywords"/>
+
+
+      <!--copyField-->
+        <field name="item_copy" type="text_ik" indexed="true" stored="false" multiValued="true"/>
+        <copyField source="content_ik" dest="item_copy"/>
+        <copyField source="title_ik" dest="item_copy"/>

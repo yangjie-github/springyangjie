@@ -1,0 +1,41 @@
+spring应用启动加载自定义类方法的几种方式:
+1.使用监听器 : ServletContextListener
+   具体可以分为两步：
+   第一步：写自定义类，实现(implements) ServletContextListener接口。
+   然后要实现接口的两个方法 public void contextDestroyed(ServletContextEvent event)和
+   public void contexInitialized(ServletContextEvent event)。
+   当然我们只需要把我们的业务逻辑写到初始化方法里就可以了。
+   第二步：在web.xml中声明这个自定义监听器。
+   <listener>
+       <listener-class>com.cn.TKong.RegQiListener</listener-class>
+   </listener>
+   使用监听器在javaweb项目中没有任何问题，但是spring框架下就会出现初始化加载顺序导致的空指针问题。
+   由于监听器执行在spring容器初始化前面，如果方法中你调用了别的层的实体类方法，但是bean并没有注入，就会报空指针。
+   在重写初始化方法中，用WebApplicationContextUtils来实例化/注入你用到的别的层类-方法。比如这里我要在controller层中需要调用action层的方法来执行业务逻辑部分。
+   @Override
+   public void contextInitialized(ServletContextEvent event){
+       WebApplicationContext applicationContext=WebApplicationContextUtils.getWebApplicationContext(event);
+       //这里用到接口类IRabbitMqConsumerTaskAction，不用其实现类RabbitMqConsumerTaskActionImpl。
+       IRabbitMqConsumerTaskAction rabbitmqConsumerTaskAction=(IRabbitMqConsumerTaskAction)applicationContext.getBean(IRabbitMqConsumerTaskAction.class);
+       //这样在监听器启动后会走这个初始化方法，并实例化接口类IRabbitMqConsumerTaskAction。就能调用对应的实现方法了。
+   }
+2.使用spring的注解@PostConstruct
+    使用此注解的方法是有限制要求的：必须是void类型，必须是无入参。,比如：public void getMessage(){…}。当然注解方式有两种：
+    一种就是在方法的上面注解，一种是在方法声明体上注解。
+    @PostConstruct
+    public void someMethod(){....}
+
+    public @PreDestroy void anothedMethod(){....}
+    具体使用有两种方法，第一种分两步，但是缺点是破坏了注解形式，加入了配置方法。有可能出现问题。我在使用时一直没有解决层注入问题，老是报空指针，因为调用别的层方法，但是那层没有实例化/没有注入：
+    1. 自定义类。在对应方法上加上@PostConstruct注解。
+    2. 在配置文件中配置注解
+    <!--首先schema中有context标签，然后引用。即：-->
+    xmlns：context="http://www.springframework.org/schema/context"
+    ......
+    <!--然后配置下面这两个bean-->
+    <!--固定用法：声明注解-->
+    <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor"/>
+    <!--声明自定义类。-->
+    <bean id="rabbitMqListenerIps" class="com.gaofei.tspjob.wsw.task.RabbitMqListenerIps"/>
+    第二种就是自定义类上也要加上@Service(“自定义类名”)，然后在方法上加上@PostConstruct注解就可以了。不用配置什么，但是代码也是注入问题。
+    无法实例化别的层的类。所以如果我现在还使用的第一种方式解决的注入问题。

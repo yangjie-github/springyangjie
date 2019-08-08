@@ -1,0 +1,99 @@
+https://www.cnblogs.com/cxyj/p/3877996.html
+1. 流程变量的作用域范围是流程实例。各个流程实例的流程变量是不相互影响的。
+2. 添加流程变量的方式：
+    (1) 启动流程是里时候添加流程变量：
+    public void startProcess() throws Exception {
+            String processDefinitionKey ="varTest";
+            // 创建流程变量
+            Map<String,Object> variables = new HashMap<String,Object>();
+            variables.put("请假人", "冯小刚");
+            // 在启动时设置流程变量
+            ProcessInstance pi = processEngine.getRuntimeService().startProcessInstanceByKey(processDefinitionKey , variables );
+            System.out.println("pid:" + pi.getId());
+        }
+    说明：
+
+    　　1)     在启动流程实例时，通过重载startProcessInstanceByKey的方法可以加载流程变量。
+
+    　　2)     第二个参数要求是Map<String ,Object>类型，意味着可以添加多个流程变量。
+
+    　　3)     当这段代码执行完以后，会在数据库表act_ru_variable中添加两行记录。
+
+    (2) 办理任务时候添加流程变量：
+        public void setVar() throws Exception {
+                String processInstanceId = "1901";
+                Task task =taskService.createTaskQuery().taskAssignee("manager").processInstanceId(processInstanceId ).singleResult();
+        //        String taskId
+                /**
+                 *  在办理过程中设置流程变量
+                 */
+        //        taskService.setVariable(taskId, variableName, value)   // 设置一个流程变量
+                Map<String, Object> variables = new HashMap<>();
+        //        variables.put("请假时间", "2013-11-22");
+        //        variables.put("请假天数", "3");
+                variables.put("请假天数", 3);
+                taskService.setVariables(task.getId(), variables );
+                /**
+                 * 在任务完成时设置流程变量
+                 */
+        //        taskService.complete(taskId)
+        //        Map<String, Object> variables = new HashMap<>();
+        //        variables.put("请假原因", "约会！！");
+        //        taskService.complete(task.getId(), variables);
+
+            }
+    说明：
+
+    　　1)     利用setVariables方法在任务办理过程中添加一批流程变量。
+
+    　　2)     利用setVariable方法在任务办理过程中添加一个流程变量。
+
+    　　3)     TaskService有一个重载 complete方法
+
+    (3) 执行流程实例时直接在Execution上设置流程变量
+
+    public void setVarByExecution() throws Exception {
+            String processInstanceId = "1901";
+            Task task =taskService.createTaskQuery().taskAssignee("manager").processInstanceId(processInstanceId ).singleResult();
+    //        String taskId
+            /**
+             *  在办理过程中设置流程变量
+             */
+    //        taskService.setVariable(taskId, variableName, value)   // 设置一个流程变量
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("批注", "好好约会，注意安全！！");
+            runtimeService.setVariables(task.getExecutionId(), variables);
+            /**
+             * 在任务完成时设置流程变量
+             */
+    //        taskService.complete(taskId)
+    //        Map<String, Object> variables = new HashMap<>();
+    //        variables.put("请假原因", "约会！！");
+    //        taskService.complete(task.getId(), variables);
+
+        }
+
+    (4) 另一种设置变量的方法
+        public void setVarByObj() throws Exception {
+                String processInstanceId = "1901";
+                Task task =taskService.createTaskQuery().taskAssignee("manager").processInstanceId(processInstanceId ).singleResult();
+                Form form = new Form();//这个javabean实现了Serializable接口
+        　　
+         　　　　form.setName("表单名称");
+                form.setContent("我是张三，我要请假3天");
+                taskService.setVariable(task.getId(), "form", form);
+            }
+
+3. 获取流程变量
+    public void viewVar() throws Exception {
+            String processInstanceId = "1901";
+            Task task =taskService.createTaskQuery().taskAssignee("user").processInstanceId(processInstanceId ).singleResult();
+            System.out.println("taskName:" + task.getName());
+    //        String variableName = "请假人";
+    //        String val = (String)taskService.getVariable(task.getId(), variableName );
+            Map<String,Object> vars = taskService.getVariables(task.getId());
+            for (String variableName : vars.keySet()) {
+                String val = (String) vars.get(variableName);
+                System.out.println(variableName + " = " +val);
+            }
+        }

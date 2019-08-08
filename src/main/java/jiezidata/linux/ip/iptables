@@ -1,0 +1,35 @@
+========================================
+CentOS 7 执行service iptables start出现redirecting to systemctl ...Failed to ...not loaded.
+        //安装iptables-services
+        yum install iptables-services
+        //设置开机启动
+        systemctl enable iptables.service
+
+=======================================
+1. # 查看防火墙状态
+   service iptables status
+
+2. # 停止防火墙
+   service iptables stop
+
+3. # 启动防火墙
+   service iptables start
+
+4. # 重启防火墙
+   service iptables restart
+
+5. # 永久关闭防火墙
+   chkconfig iptables off
+
+6. # 永久关闭后重启
+   chkconfig iptables on
+7. 开放防火墙端口
+    vim /etc/sysconfig/iptables
+    -A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+    保存退出后重启防火墙
+    service iptables restart
+8. 开放端口
+    1.编辑 /etc/sysconfig/iptables文件：vi /etc/sysconfig/iptables
+        加入内容并保存：-A RH-Firewall-1-INPUT -m state --state NEW -m tcp -p tcp --dport 8080 -j ACCEPT
+    2.重启服务：/etc/init.d/iptables restart
+    3.查看端口是否开放：/sbin/iptables -L -n

@@ -1,0 +1,46 @@
+
+    spring事务的默认配置
+
+　　Spring的事务管理默认是针对unchecked exception回滚，也就是默认对Error异常和RuntimeException异常以及其子类进行事务回滚，且必须对抛出异常，若使用try-catch对其异常捕获则不会进行回滚！（Error异常和RuntimeException异常抛出时不需要方法调用throws或try-catch语句）；
+
+ 　  checked异常,checked异常必须由try-catch语句包含或者由方法throws抛出，且事务默认对checked异常不进行回滚。
+
+    spring事务回滚异常的修改
+
+　　a、注解方式。   @javax.transaction.Transactional 和 @org.springframework.transaction.annotation.Transactional 相似，均可使用。
+
+　　　rollbackFor定义的是需要回滚的异常，noRollbackFor定义的是不需要回滚的异常。（默认情况下对Error和RuntimeException及其子类进行回滚）
+
+@Transactional(rollbackFor=MyException.class,noRollbackFor=OtherException.class)
+public void updateUser(User user){
+　　dao.update(user);
+}
+
+　　b、配置方式。   定义时声明类的全限定名
+复制代码
+
+<tx:advice id="txAdvice" transaction-manager="transactionManager">
+    <!-- 配置详细事务处理语义 -->
+    <tx:attributes>
+        <!-- 采用默认事务方式 -->
+        <tx:method name="*" rollback-for="com.tz.exception.MyException" no-rollback-for="com.tz.exception.OtherException"/>
+
+    </tx:attributes>
+</tx:advice>
+
+复制代码
+
+　　注：若rollbackFor和noRollbackFor配置的类相同，则出现对应异常会进行回滚
+
+　　c、若需要自行捕获异常进行处理，则使用 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly() 语句进行手动回滚。
+复制代码
+
+@Transactional(rollbackFor=MyException.class,noRollbackFor=RuntimeException.class)
+public void updateUser(User user){
+    try{
+        dao.update(user);
+    }catch(MyException e){
+        //------//其他操作
+        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();//捕获异常后进行回滚
+    }
+}

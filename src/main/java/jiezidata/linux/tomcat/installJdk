@@ -1,0 +1,21 @@
+一、下载与解压
+    1. 下载JDK
+    2. 上传jdk到服务器；
+    3. 解压jdk: tar -zxvf jdk-8u101-linux-x64.tar.gz
+    4. 创建文件夹：mkdir /usr/local/java
+    5. 移动解压后的文件夹：cp -r jdk-8u101-linux-x64 /usr/local/java
+二、配置环境
+    编辑文件：vi /etc/profile
+    在前面添加：
+export JAVA_HOME=/usr/lib/jvm/jdk1.8.0_131
+export JRE_HOME=${JAVA_HOME}/jre
+export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib
+export  PATH=${JAVA_HOME}/bin:$PATH
+三、执行profile文件
+
+    source /etc/profile
+    这样可以使配置不用重启即可立即生效。
+
+四、检查新安装的jdk
+
+    java -version

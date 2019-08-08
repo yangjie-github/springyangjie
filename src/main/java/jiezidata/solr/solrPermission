@@ -1,0 +1,125 @@
+搭建solr服务器如果不加登录权限，总是不安全的，所以就加了权限，加权限其实很简单，拿我的举例，如下：
+环境是：jdk1.8，tomcat9，solr7（solr服务器已搭建成功，只演示加权限）
+1.进入到你的solr服务器的conf文件夹内：
+
+    [root@Tomcat02 /]# cd /usr/local/tomcat9/conf/
+2.打开tomcat-users.xml文件：
+
+    [root@Tomcat02 conf]# vi tomcat-users.xml
+3.如果有这一段，请注掉：
+
+    <!--
+  <role rolename="tomcat"/>
+  <role rolename="role1"/>
+  <user username="tomcat" password="<must-be-changed>" roles="tomcat"/>
+  <user username="both" password="<must-be-changed>" roles="tomcat,role1"/>
+  <user username="role1" password="<must-be-changed>" roles="role1"/>
+
+    -->
+4.在最后加上这一段，注意必须是在</tomcat-users>标签里，username是你的用户名，password是你的密码，roles是你的角色与rolename一致：
+
+    <role rolename="solr"/>
+
+    <user username="" password="" roles="solr"/>
+5.保存之后进入到你的solr项目的WEB-INF文件夹里：
+
+    [root@Tomcat02 conf]# cd /usr/local/tomcat9/webapps/solr7/WEB-INF/
+6.打开web.xml文件：
+
+    [root@Tomcat02 WEB-INF]# vi web.xml
+7.看最后有没有以下内容，如果有请注掉：
+
+    <!--  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Disable TRACE</web-resource-name>
+      <url-pattern>/</url-pattern>
+      <http-method>TRACE</http-method>
+    </web-resource-collection>
+    <auth-constraint/>
+  </security-constraint>
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Enable everything but TRACE</web-resource-name>
+      <url-pattern>/</url-pattern>
+      <http-method-omission>TRACE</http-method-omission>
+    </web-resource-collection>
+
+  </security-constraint> -->
+8.在最后添加以下内容，注意，内容必须在</web-app>标签内：
+
+    <security-constraint>
+      <web-resource-collection>
+          <web-resource-name>solr</web-resource-name>
+          <url-pattern>/</url-pattern>
+          <http-method>GET</http-method>
+          <http-method>POST</http-method>
+        <http-method>DELETE</http-method>
+        <http-method>PUT</http-method>
+      </web-resource-collection>
+      <auth-constraint>
+          <description>This applies only to the "tomcat" security role</description>
+          <role-name>solr</role-name>
+          <role-name>zhhhxrsolrce36</role-name>
+      </auth-constraint>
+      <user-data-constraint>
+          <transport-guarantee>NONE</transport-guarantee>
+      </user-data-constraint>
+  </security-constraint>
+
+
+  <login-config>
+      <auth-method>BASIC</auth-method>
+      <realm-name>solr</realm-name>
+
+  </login-config>
+--------------------- -------------------------------------------------------------
+solrJ访问权限
+
+以上是solr添加权限的步骤，下面是solrj添加用户名及密码链接solr服务器，因为solr服务器如果添加了权限，不论是浏览器访问domin还是solrj访问都需要登录名和登录密码。
+10.我在应用solr客户端的时候是创建了一个工具类，供参考，具体设置链接参数如下代码：
+
+public class SolrUtil {
+	private static HttpClient createClient;
+	static{
+		ModifiableSolrParams invariantParams = new ModifiableSolrParams();
+	      invariantParams.set(HttpClientUtil.PROP_FOLLOW_REDIRECTS, false); //遵循重定向
+	      invariantParams.set(HttpClientUtil.PROP_BASIC_AUTH_USER, (string类型用户名)); //基本认证用户名
+	      invariantParams.set(HttpClientUtil.PROP_BASIC_AUTH_PASS, (string类型密码);//基本认证密码
+	      invariantParams.set(HttpClientUtil.PROP_MAX_CONNECTIONS, 1000);//最大允许总连接
+	      invariantParams.set(HttpClientUtil.PROP_ALLOW_COMPRESSION, true);//如果服务器支持的话，允许压缩
+	      invariantParams.set(HttpClientUtil.PROP_MAX_CONNECTIONS_PER_HOST, 1000);//每个主机允许的最大连接
+		createClient = HttpClientUtil.createClient(invariantParams);
+	}
+   private static HttpSolrClient client = new HttpSolrClient("http://ip:8089/solr7/coll",createClient);
+/**
+   * 根据关键字分页查询
+   * @param goodsName
+   * @param page
+   * @param pageSize
+ * @param client
+   * @return
+   */
+   public static List<JdProduct>  getProductByKeyword(String goodsName,int page,int pageSize,String filed){
+	   // 从solr 中分页查询
+		 List<JdProduct> list = new ArrayList<JdProduct>(pageSize);
+			try {
+				 SolrQuery solrQuery = new SolrQuery();
+				 solrQuery.setStart((page-1)*pageSize);
+				 solrQuery.setRows(pageSize);
+				 solrQuery.setParam("group", false);
+//                 solrQuery.add("q", filed+":"+goodsName);
+//				 solrQuery.addSort("product_update_time",SolrQuery.ORDER.desc);
+				 solrQuery.add("q","product_goods_name:"+goodsName+"^2"+" OR (product_goods_name:"+goodsName+" AND product_category_name:"+goodsName+")^1.5");
+				 QueryResponse query =client.query(solrQuery);
+				 SolrDocumentList solrDocumentList = query.getResults();
+				//取商品列表,自己封装的一个方法entityList
+				list = SolrUtil.entityList(solrDocumentList, pageSize);
+			} catch (SolrServerException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			 return list;
+   }
+
+

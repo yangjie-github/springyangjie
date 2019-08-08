@@ -1,0 +1,50 @@
+1. 异常的继承结构：Throwable为基类，Error和Exception继承Throwable，RuntimeException和IOException等继承Exception。
+   Error和RuntimeException及其子类成为未检查异常（unchecked），其它异常成为已检查异常（checked）。
+2. Error表示程序在运行期间出现了十分严重、不可恢复的错误，在这种情况下应用程序只能中止运行，例如JAVA 虚拟机出现错误。Error是一种unchecked Exception，
+   编译器不会检查Error是否被处理，在程序中不用捕获Error类型的异常。一般情况下，在程序中也不应该抛出Error类型的异常。
+3. <!-- Jpa 事务配置 -->
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+      <property name="entityManagerFactory" ref="entityManagerFactory"/>
+    </bean>
+
+    <!-- 开启注解事务 -->
+    <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+
+    <property name="xxx" value="xxx"/>
+
+    <property name="xxx" value="xxx"/>
+
+     ....
+     <property name="defaultAutoCommit" value="true" />
+
+    </bean>
+
+    在spring的配置文件中，如果数据源的defaultAutoCommit设置为True了，那么方法中如果自己捕获了异常，事务是不会回滚的，如果没有自己捕获异常则事务会回滚
+    可能你会发现你并没有配置这个参数，是不是他就不会自动提交呢?答案是不是的，我这里是使用了com.alibaba.druid.pool.DruidDataSource作为数据库连接池，默认的defaultAutoCommit就是true，
+4. 两种情况
+    1. 程序中没有手动捕获异常
+        @Transactional(rollbackOn = { Exception.class })
+        public void test() throws Exception {
+           doDbStuff1();
+           doDbStuff2();//假如这个操作数据库的方法会抛出异常，现在方法doDbStuff1()对数据库的操作  会回滚。
+        }
+    2. 程序中手动捕获异常
+        @Transactional(rollbackOn = { Exception.class })
+        public void test() {
+           try {
+            doDbStuff1();
+            doDbStuff2();//假如这个操作数据库的方法会抛出异常，现在方法doDbStuff1()对数据库的操作 不会回滚。
+           } catch (Exception e) {
+              e.printStackTrace();
+           }
+        }
+    若想手动捕获的异常也回滚，则需要在类或者方法上加：@Transactional(rollbackOn = { Exception.class })
+5. spring异常回滚
+
+   1. spring 的默认事务机制，当出现unchecked异常时候回滚，checked异常的时候不会回滚；
+
+   2. 异常中unchecked异常包括error和runtime异常，需要try catch或向上抛出的异常为checked异常比如IOException，也就是说程序抛出runtime异常的时候才会进行回滚，其他异常不回滚，
+
+   3. Spring的AOP即声明式事务管理默认是针对unchecked exception回滚。也就是默认对RuntimeException()异常或是其子类进行事务回滚；checked异常,即Exception可try{}捕获的不会回滚，
+      如果使用try-catch捕获抛出的unchecked异常后没有在catch块中采用页面硬编码的方式使用spring api对事务做显式的回滚，则事务不会回滚，

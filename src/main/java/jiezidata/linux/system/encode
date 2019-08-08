@@ -1,0 +1,19 @@
+1. 修改linix编码
+vi   /etc/sysconfig/i18n
+
+默认为:
+
+LANG="en_US.UTF-8"
+SYSFONT="latarcyrheb-sun16"
+
+修改为:
+
+LANG="zh_CN.GBK"
+SUPPORTED="zh_CN.UTF-8:zh_CN:zh"
+SYSFONT="latarcyrheb-sun16"
+
+方法2：
+vi /etc/profile
+
+export LC_ALL="zh_CN.GBK"
+export LANG="zh_CN.GBK"

@@ -1,0 +1,48 @@
+# Created by .ignore support plugin (hsz.mobi)
+### Example user template template
+### Example user template
+
+# IntelliJ project files
+#以【/】表示目录
+#以【*】匹配多个字符
+#以【?】匹配单个字符
+#以【[]】匹配字符列
+#以【!】忽略文件或者目录
+#注意， .gitignore 文件的位置
+
+# Eclipse
+#.classpath
+#.project
+#.settings/
+
+# Intellij
+.idea/
+*.iml
+*.iws
+
+
+# Mac
+#.DS_Store
+
+# Maven
+log/
+target/**
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+
+# java
+
+*.ear
+
+# jrebel
+rebel.xml
+
+# bak
+*.bak
+/bin/
+

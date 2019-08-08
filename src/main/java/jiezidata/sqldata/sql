@@ -1,0 +1,1 @@
+1. 添加外键： alter table chengcheng.photo add constraint fk_photo_userId foreign key(userId) references chengcheng.user(id);

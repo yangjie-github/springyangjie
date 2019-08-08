@@ -1,0 +1,86 @@
+<!--查看分支-->git branch
+
+<!--查看分支并显示分支提交-->git branch -v
+
+<!--新建分支-->git branch test;//会创建一个指向当前提交的新的分支，只创建，不会切换到该分支上；
+
+<!--修改本地分支名称-->git branch -m oldName newName
+
+<!--新建并切换到该分支上-->git checkout -b test
+
+<!--切换分支 -->git checkout test
+
+<!--删除分支-->如果需要删除的分支不是当前正在打开的分支，使用branch -d直接删除-->git branch -d test
+
+<!--删除分支-->如果我们在试图删除一个分支时自己还没转移到另外的分支上，Git就会给出一个警告，并拒绝该删除操作。-->git branch -D test
+
+<!--恢复被删除的分支，Git会自行负责分支的管理，所以当我们删除一个分支时，Git只是删除了指向相关提交的指针，但该提交对象依然会留在版本库中-->
+        git reflog命令：显示整个本地仓储的commit，包括所有branch的commit，甚至包括已经撤销的commit。
+        git reset --hard commitId(例如1df8f89)
+
+<!--添加文件-->git add .
+
+<!--取消暂存区的文件-->git reset
+
+<!--提交文件到本地-->git commit -m "提交注释"
+
+<!--提交到远程仓库-->git push origin master
+
+<!--合并本地分支-->git merge test
+
+<!--合并远程分支-->git merge origin/master
+
+<!--获取远程分支-->git fetch origin master
+
+<!--直接合并远程分支， 相当于上面两步-->git pull origin master
+
+<!--创建本地分支， 拉取远程某个分支-->git checkout -b test origin/master
+
+<!--git冲突处理-->
+        <<<<<<<<<<< HEAD: 当前分支的不同
+        ===========
+        >>>>>>>>>>> test: 被合并分支的不同
+
+<!--查看远程分支-->git branch -r
+
+<!--删除远程分支-->git push origin --delete <branchName>
+
+<!--删除远程分支-->git branch -r -d origin/<branchName>
+
+<!--删除远程分支-->git push origin :<branchName>
+
+<!--添加远程仓库-->git remote add remoteName git@github.com:自己的名字/learngit.git //后面是仓库的ssh
+
+<!--查看远程仓库名称-->git remote show origin
+
+<!--重命名远程仓库-->git remote rename oldname newname
+
+<!--删除远程仓库-->git remote rm origin
+
+<!--查看远程仓库名称-->git remote show origin
+
+<!--重命名远程仓库-->git remote rename oldname newname
+
+<!--删除远程仓库-->git remote rm origin
+
+<!--忽略.idea文件不提交-->git rm -r --cached .idea
+
+<!--创建ssh 秘钥和公钥-->ssh-keygen -t rsa -C "邮箱地址" // 会生成对应的秘钥文件
+
+<!--将本地文件同步到服务器-->
+        第一步 ： 在git上创建远程仓库
+        第二步 ： 在本地文件夹中git init
+        第三步 ： git remote add origin 远程仓库的ssh
+        第四步 ： git pull origin master 同步远程仓库
+        第五步 ： git add .   git commit -m "理由"    git push origin master
+<!--出现错误 refusing to merge unrelated histories-->
+        这是在网页项目刷新后，本地项目和远程仓库不同步所致，需要重新删除init文件，重新git init
+
+<!--git查看当前用户和邮箱-->git config user.name/ git config user.email
+<!--修改用户名和邮箱地址-->git config --global user.name "xxx"/ git config --global user.email "xxx"
+<!--
+    需要配置公钥
+Please make sure you have the correct access rights
+and the repository exists.
+    -->
+

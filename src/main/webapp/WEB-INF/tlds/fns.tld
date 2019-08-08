@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+        version="2.0">
+
+    <!--
+        function-class就是该方法的实体所在类路径，
+        function-signature就是该方法的方法名，值得一提的是，这个方法必须是个static方法。
+        example就是使用方式写法示例
+    -->
+    <description>JSTL 1.1 functions library</description>
+    <display-name>JSTL functions sys</display-name>
+    <tlib-version>1.1</tlib-version>
+    <short-name>fns</short-name>
+    <uri>http://java.sun.com/jsp/jstl/functionss</uri>
+
+    <function>
+        <description>获取当前用户对象</description>
+        <name>getCurrentUser</name>
+        <function-class>cn.mylife.tld.manage.user.UserTld</function-class>
+        <function-signature>cn.mylife.modules.user.entity.User getCurrentUser()</function-signature>
+        <example>${fns:getCurrentUser()}</example>
+    </function>
+</taglib>

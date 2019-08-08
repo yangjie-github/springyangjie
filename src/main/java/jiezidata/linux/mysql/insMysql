@@ -1,0 +1,70 @@
+与很多软件安装一样，如果是第二次安装，比第一次安装要纠结得多，很多东西可能因为没有删除干净，会安装不上，我这次安装mysql就是一个例子。
+
+下面是怎样删除干净的方法：
+
+1.       rpm删除
+
+先用rpm –qa |grep mysql查看安装的rpm包
+
+再用（注意只能是client在前）
+
+rpm -e MySQL-client-community-5.1.40-0.rhel5
+
+rpm -e MySQL-server-community-5.1.40-0.rhel5
+
+两个命令删除服务器端和客户端。
+
+2.       删除老版本的开发头文件和库
+
+这里可以肯定的是随着上面两个rpm包的删除，/usr/bin/下相应的很多mysql打头的文件和/usr/share/下的mysql文件夹都会删除，但是还有一些默认不会删除的如下：
+
+/var/lib下面是否有一个mysql文件夹，这里是老版本的开发库。
+
+/etc/下面是否有my.cnf文件，是老版本的配置文件。
+
+用rm命令将以上文件全部删除。
+
+3.       删除可能还在运行的mysql进程——这是最容易忽略的地方
+
+可以用ps –ef | grep mysql查看下
+
+-bash-3.1# ps -ef |grep mysql
+
+root      4885     1  0 10:43 ?        00:00:00 /bin/sh bin/mysqld_safe --user=mysql
+
+mysql 4984  4885  0 10:43 ?00:00:00 /usr/local/mysql/bin/mysqld --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data --user=mysql --log-error=/usr/local/mysql/data/namenode.err --pid-file=/usr/local/mysql/data/namenode.pid --socket=/tmp/mysql.sock --port=3306
+
+root      8116  7066  0 21:11 pts/1    00:00:00 grep mysql
+
+多于一个时把他们全部kill掉。
+
+否则会在你安装server的rpm包的时候报启动错误，我的报错最后两行如下：
+
+Starting MySQL..Manager of pid-file quit without updating file.[失败]
+
+Giving mysqld 2 seconds to start.
+
+2. 查看mysql的端口是否开启
+在Linux使用过程中，需要了解当前系统开放了哪些端口，并且要查看开放这些端口的具体进程和用户，可以通过netstat命令进行简单查询
+2
+
+netstat命令各个参数说明如下：
+
+　　-t : 指明显示TCP端口
+
+　　-u : 指明显示UDP端口
+
+　　-l : 仅显示监听套接字(所谓套接字就是使应用程序能够读写与收发通讯协议(protocol)与资料的程序)
+
+　　-p : 显示进程标识符和程序名称，每一个套接字/端口都属于一个程序。
+
+　　-n : 不进行DNS轮询，显示IP(可以加速操作)
+3
+
+即可显示当前服务器上所有端口及进程服务，于grep结合可查看某个具体端口及服务情况··
+
+netstat -ntlp   //查看当前所有tcp端口·
+
+netstat -ntulp |grep 80   //查看所有80端口使用情况·
+
+netstat -an | grep 3306   //查看所有3306端口使用情况·
